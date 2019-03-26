@@ -19,6 +19,7 @@ Patch1: stunnel-4-sample.patch
 Patch2: pollhup.patch
 Buildroot: %{_tmppath}/stunnel-root
 # util-linux is needed for rename
+BuildRequires: gcc
 BuildRequires: openssl-devel
 BuildRequires: pkgconfig
 BuildRequires: tcp_wrappers-devel
