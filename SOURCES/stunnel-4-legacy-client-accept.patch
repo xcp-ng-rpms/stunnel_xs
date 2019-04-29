@@ -1,0 +1,34 @@
+From dd58d0e8240d8ebf4982f706013e0d7194e3e0d4 Mon Sep 17 00:00:00 2001
+From: Kun Ma <kun.ma@citrix.com>
+Date: Mon, 2 Jul 2018 14:35:43 +0800
+Subject: [PATCH] Define SSL_OP_LEGACY_CLIENT_ACCEPT for CCM library
+
+---
+ src/options.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/options.c b/src/options.c
+index a445d49..183d4d4 100644
+--- a/src/options.c
++++ b/src/options.c
+@@ -2269,6 +2269,9 @@ static int parse_debug_level(char *arg) {
+ 
+ /**************************************** SSL options */
+ 
++// define SSL_OP_LEGACY_CLIENT_ACCEPT for CCM library
++#define SSL_OP_LEGACY_CLIENT_ACCEPT     0x00000400L
++
+ static int parse_ssl_option(char *arg) {
+     struct {
+         char *name;
+@@ -2340,6 +2343,7 @@ static int parse_ssl_option(char *arg) {
+ #ifdef SSL_OP_CRYPTOPRO_TLSEXT_BUG
+         {"CRYPTOPRO_TLSEXT_BUG", SSL_OP_CRYPTOPRO_TLSEXT_BUG},
+ #endif
++        {"LEGACY_CLIENT_ACCEPT", SSL_OP_LEGACY_CLIENT_ACCEPT},
+         {NULL, 0}
+     }, *option;
+ 
+-- 
+2.7.4
+
