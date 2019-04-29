@@ -1,28 +1,37 @@
 Summary: An SSL-encrypting socket wrapper
 Name: stunnel_xs
 Version: 4.56
-Release: 6%{?dist}.xs1
+Release: 6%{?dist}.xs4
 License: GPLv2
 Group: Applications/Internet
 URL: http://www.stunnel.org/
 #Source0: https://www.stunnel.org/downloads/archive/4.x/stunnel-%{version}.tar.gz
+
 Source0: https://repo.citrite.net:443/ctx-local-contrib/xs-opam/stunnel-4.56.tar.gz
-Source1: stunnel-%{version}.tar.gz.asc
-Source7: stunnel-%{version}.tar.gz.sha256
-Source2: Certificate-Creation
-Source3: sfinger.xinetd
-Source4: stunnel-sfinger.conf
-Source5: pop3-redirect.xinetd
-Source6: stunnel-pop3s-client.conf
-Patch0: stunnel-4-authpriv.patch
-Patch1: stunnel-4-sample.patch
-Patch2: pollhup.patch
+Source1: SOURCES/stunnel_xs/stunnel-4.56.tar.gz.asc
+Source2: SOURCES/stunnel_xs/Certificate-Creation
+Source3: SOURCES/stunnel_xs/sfinger.xinetd
+Source4: SOURCES/stunnel_xs/stunnel-sfinger.conf
+Source5: SOURCES/stunnel_xs/pop3-redirect.xinetd
+Source6: SOURCES/stunnel_xs/stunnel-pop3s-client.conf
+Source7: SOURCES/stunnel_xs/stunnel-4.56.tar.gz.sha256
+Patch0: SOURCES/stunnel_xs/stunnel-4-authpriv.patch
+Patch1: SOURCES/stunnel_xs/stunnel-4-sample.patch
+Patch2: SOURCES/stunnel_xs/pollhup.patch
+Patch3: SOURCES/stunnel_xs/stunnel-4-legacy-client-accept.patch
+Patch4: SOURCES/stunnel_xs/stunnel-4-fips-dont-requires-tlsv1.patch
+Patch5: SOURCES/stunnel_xs/stunnel-4-common-name-check.patch
+
+
+
 Buildroot: %{_tmppath}/stunnel-root
 # util-linux is needed for rename
 BuildRequires: openssl-devel
 BuildRequires: pkgconfig
 BuildRequires: tcp_wrappers-devel
 BuildRequires: util-linux
+# required for autosetup -S git
+BuildRequires: git
 # for /usr/bin/pod2man
 %if 0%{?fedora} > 18 || 0%{?rhel} >= 7
 BuildRequires: perl-podlators
@@ -34,10 +43,7 @@ Layer) support to ordinary applications. For example, it can be used
 in conjunction with imapd to create an SSL secure IMAP server.
 
 %prep
-%setup -q -n stunnel-%{version}
-%patch0 -p1 -b .authpriv
-%patch1 -p1 -b .sample
-%patch2 -p1
+%autosetup -p1 -n stunnel-%{version} -S git
 
 iconv -f iso-8859-1 -t utf-8 < doc/stunnel.fr.8 > doc/stunnel.fr.8_
 mv doc/stunnel.fr.8_ doc/stunnel.fr.8
@@ -49,7 +55,9 @@ if pkg-config openssl ; then
 	LDFLAGS="`pkg-config --libs-only-L openssl`"; export LDFLAGS
 fi
 %configure --enable-fips --enable-ipv6 \
-	CPPFLAGS="-UPIDFILE -DPIDFILE='\"%{_localstatedir}/run/stunnel.pid\"'"
+	CPPFLAGS="-UPIDFILE -DPIDFILE='\"%{_localstatedir}/run/stunnel.pid\"'"\
+	CFLAGS="$CFLAGS -DOPENSSL_NO_MD4 -DOPENSSL_NO_COMP -DOPENSSL_NO_PSK -g -O2"\
+	LDFLAGS="$LDFLAGS -Wl,-rpath=/lib64/citrix"
 make LDADD="-pie -Wl,-z,defs,-z,relro,-z,now"
 
 %install
@@ -90,6 +98,15 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_sysconfdir}/stunnel/*
 
 %changelog
+* Thu Sep 20 2018 Wei Xie <wei.xie@citrix.com> - 4.56-6.xs4
+- CA-298514: Patch stunnel to do common name check
+
+* Mon Aug 06 2018 Kun Ma <kun.ma@citrix.com> - 4.56-6.xs3
+- CP-29015: Remove limitation on TLSv1 in FIPS mode
+
+* Tue Jul 03 2018 Kun Ma <kun.ma@citrix.com> - 4.56-6.xs2
+- CA-291569: Patch stunnel to accept legacy client
+
 * Mon Feb 27 2017 Christian Lindig <christian.lindig@citrix.com> - * 4.56-6
 - Download from internal mirror
 
