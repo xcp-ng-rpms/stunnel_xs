@@ -1,7 +1,7 @@
 Summary: An SSL-encrypting socket wrapper
 Name: stunnel_xs
 Version: 4.56
-Release: 6%{?dist}.xs4
+Release: 6.xs4%{?dist}
 License: GPLv2
 Group: Applications/Internet
 URL: http://www.stunnel.org/
